@@ -1,4 +1,4 @@
-# Book-list
+# Book List
 Keep track of books to read and organize them by subject
 
 ## What problem will this solve?
