@@ -1,1 +1,2 @@
-{}
+{:database-url "jdbc:postgresql://localhost/booklist?user=postgres&password=test&sslmode=disable"
+ :options {:port 8080} }

@@ -1,21 +1,14 @@
--- :name create-user! :! :n
--- :doc creates a new user record
-INSERT INTO users
-(id, first_name, last_name, email, pass)
-VALUES (:id, :first_name, :last_name, :email, :pass)
+-- :name create-book! :! :n
+-- :doc add new book record
+INSERT INTO books
+(id, title, author, thumbnail, read)
+VALUES (:id, :title, :author, :thumbnail, false)
 
--- :name update-user! :! :n
--- :doc updates an existing user record
-UPDATE users
-SET first_name = :first_name, last_name = :last_name, email = :email
+-- :name get-book :? :1
+-- :doc retrieve book record given id
+SELECT * FROM books
 WHERE id = :id
 
--- :name get-user :? :1
--- :doc retrieves a user record given the id
-SELECT * FROM users
-WHERE id = :id
-
--- :name delete-user! :! :n
--- :doc deletes a user record given the id
-DELETE FROM users
-WHERE id = :id
+-- :name get-all-books :? :*
+-- :doc get all book records
+SELECT * FROM books

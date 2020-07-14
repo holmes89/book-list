@@ -1,13 +1,14 @@
 (ns book-list.handler
   (:require
-    [book-list.middleware :as middleware]
-    [book-list.layout :refer [error-page]]
-    [book-list.routes.home :refer [home-routes]]
-    [reitit.ring :as ring]
-    [ring.middleware.content-type :refer [wrap-content-type]]
-    [ring.middleware.webjars :refer [wrap-webjars]]
-    [book-list.env :refer [defaults]]
-    [mount.core :as mount]))
+   [book-list.middleware :as middleware]
+   [book-list.layout :refer [error-page]]
+   [book-list.routes.home :refer [home-routes]]
+   [book-list.routes.books :refer [book-routes]]
+   [reitit.ring :as ring]
+   [ring.middleware.content-type :refer [wrap-content-type]]
+   [ring.middleware.webjars :refer [wrap-webjars]]
+   [book-list.env :refer [defaults]]
+   [mount.core :as mount]))
 
 (mount/defstate init-app
   :start ((or (:init defaults) (fn [])))
@@ -17,7 +18,7 @@
   :start
   (ring/ring-handler
     (ring/router
-      [(home-routes)])
+      [(book-routes) (home-routes)])
     (ring/routes
       (ring/create-resource-handler
         {:path "/"})
