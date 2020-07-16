@@ -18,7 +18,7 @@
   :start
   (ring/ring-handler
     (ring/router
-      [(book-routes) (home-routes)])
+      [ book-routes home-routes])
     (ring/routes
       (ring/create-resource-handler
         {:path "/"})
