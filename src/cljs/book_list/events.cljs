@@ -1,9 +1,11 @@
 (ns book-list.events
   (:require
-    [re-frame.core :as rf]
-    [ajax.core :as ajax]
-    [reitit.frontend.easy :as rfe]
-    [reitit.frontend.controllers :as rfc]))
+   [ajax.core :as ajax]        
+   [day8.re-frame.http-fx]
+   [re-frame.core :as rf]
+   [book-list.db :as db]
+   [reitit.frontend.easy :as rfe]
+   [reitit.frontend.controllers :as rfc]))
 
 ;;dispatchers
 
@@ -21,58 +23,121 @@
     (rfe/push-state k params query)))
 
 (rf/reg-event-fx
-  :common/navigate!
+    :common/navigate!
   (fn [_ [_ url-key params query]]
     {:common/navigate-fx! [url-key params query]}))
 
 (rf/reg-event-db
-  :set-docs
-  (fn [db [_ docs]]
-    (assoc db :docs docs)))
-
-(rf/reg-event-fx
-  :fetch-docs
+    ::initialize-db
   (fn [_ _]
-    {:http-xhrio {:method          :get
-                  :uri             "/docs"
-                  :response-format (ajax/raw-response-format)
-                  :on-success       [:set-docs]}}))
+    db/default-db))
 
 (rf/reg-event-db
-  :common/set-error
-  (fn [db [_ error]]
-    (assoc db :common/error error)))
+    ::set-active-panel
+  (fn [db [_ active-panel]]
+    (assoc db :active-panel active-panel)))
+
+(rf/reg-event-db                   
+    ::process-response             
+  (fn
+    [db [_ response]]
+    (-> db
+        (assoc :loading? false)
+        (assoc :book-list (js->clj response)))))
+
+
+(rf/reg-event-db                   
+    ::bad-response             
+  (fn
+    [message]
+    (js/console.log  message)))
+
+(defn read?
+  [book]
+  (:read book))
+
+(def read-filter
+  (filter read?))
+
+(defn unread?
+  [book]
+  (not (:read book)))
+
+(def unread-filter
+  (filter unread?))
+
+(defn liked?
+  [book]
+  (:liked book))
+
+(def liked-filter
+  (filter liked?))
+
+(rf/reg-event-db
+    ::toggle-read-filter
+  (fn
+    [db]
+    (as-> (update-in db [:read-filter-enabled?] not) d
+      (if (contains? (:filters d) read-filter) 
+        (update-in d [:filters] disj read-filter)
+        (update-in d [:filters] conj read-filter)))))
+
+(rf/reg-event-db
+    ::toggle-unread-filter
+  (fn
+    [db]
+    (as-> (update-in db [:unread-filter-enabled?] not) d
+      (if (contains? (:filters d) unread-filter)
+        (update-in d [:filters] disj unread-filter)
+        (update-in d [:filters] conj unread-filter)))))
+
+(rf/reg-event-db
+    ::toggle-liked-filter
+  (fn
+    [db]
+    (as-> (update-in db [:liked-filter-enabled?] not) d
+      (if (contains? (:filters d) liked-filter)
+        (update-in d [:filters] disj liked-filter)
+        (update-in d [:filters] conj liked-filter)))))
 
 (rf/reg-event-fx
-  :page/init-home
-  (fn [_ _]
-    {:dispatch [:fetch-docs]}))
+    ::add-book
+  (fn
+    [{db :db} [_ body]]
+    {:http-xhrio {:method          :post
+                  :uri              "/apis/books"
+                  :params body
+                  :format          (ajax/json-request-format {:keywords? true})
+                  :response-format (ajax/json-response-format {:keywords? true}) 
+                  :on-success      [::get-books]
+                  :on-failure      [::bad-response]
+                  }
+     :db  (assoc db :loading? true)}))
 
-;;subscriptions
+(rf/reg-event-fx
+    ::update-book
+  (fn
+    [{db :db} [_ body]]
+    {:http-xhrio {:method          :put
+                  :uri              (str "/apis/books/" (get body :id))
+                  :params body
+                  :format          (ajax/json-request-format {:keywords? true})
+                  :response-format (ajax/json-response-format {:keywords? true}) 
+                  :on-success      [::get-books]
+                  :on-failure      [::bad-response]
+                  }
+     :db  (assoc db :loading? true)}))
 
-(rf/reg-sub
-  :common/route
-  (fn [db _]
-    (-> db :common/route)))
+(rf/reg-event-fx
+    ::get-books
+  (fn
+    [{db :db} _]
+    {:http-xhrio {:method          :get
+                  :uri             "/apis/books"
+                  :format          (ajax/json-request-format)
+                  :response-format (ajax/json-response-format {:keywords? true}) 
+                  :on-success      [::process-response]
+                  :on-failure      [::bad-response]
+                  }
+     :db  (assoc db :loading? true)}))
 
-(rf/reg-sub
-  :common/page-id
-  :<- [:common/route]
-  (fn [route _]
-    (-> route :data :name)))
-
-(rf/reg-sub
-  :common/page
-  :<- [:common/route]
-  (fn [route _]
-    (-> route :data :view)))
-
-(rf/reg-sub
-  :docs
-  (fn [db _]
-    (:docs db)))
-
-(rf/reg-sub
-  :common/error
-  (fn [db _]
-    (:common/error db)))

@@ -43,6 +43,7 @@
                  [ring-webjars "0.2.0"]
                  [ring/ring-core "1.8.1"]
                  [ring/ring-defaults "0.3.2"]
+                 [secretary "1.2.3"]
                  [selmer "1.12.27"]]
 
   :min-lein-version "2.0.0"
@@ -68,18 +69,18 @@
   {:uberjar {:omit-source true
              :prep-tasks ["compile" ["cljsbuild" "once" "min"]]
              :cljsbuild{:builds
-              {:min
-               {:source-paths ["src/cljc" "src/cljs" "env/prod/cljs"]
-                :compiler
-                {:output-dir "target/cljsbuild/public/js"
-                 :output-to "target/cljsbuild/public/js/app.js"
-                 :source-map "target/cljsbuild/public/js/app.js.map"
-                 :optimizations :advanced
-                 :pretty-print false
-                 :infer-externs true
-                 :closure-warnings
-                 {:externs-validation :off :non-standard-jsdoc :off}
-                 :externs ["react/externs/react.js"]}}}}
+                        {:min
+                         {:source-paths ["src/cljc" "src/cljs" "env/prod/cljs"]
+                          :compiler
+                          {:output-dir "target/cljsbuild/public/js"
+                           :output-to "target/cljsbuild/public/js/app.js"
+                           :source-map "target/cljsbuild/public/js/app.js.map"
+                           :optimizations :advanced
+                           :pretty-print false
+                           :infer-externs true
+                           :closure-warnings
+                           {:externs-validation :off :non-standard-jsdoc :off}
+                           :externs ["react/externs/react.js"]}}}}
              
              :aot :all
              :uberjar-name "book-list.jar"
@@ -104,19 +105,19 @@
                                  [lein-doo "0.1.11"]
                                  [lein-figwheel "0.5.20"]] 
                   :cljsbuild{:builds
-                   {:app
-                    {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
-                     :figwheel {:on-jsload "book-list.core/mount-components"}
-                     :compiler
-                     {:output-dir "target/cljsbuild/public/js/out"
-                      :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
-                      :optimizations :none
-                      :preloads [re-frisk.preload]
-                      :output-to "target/cljsbuild/public/js/app.js"
-                      :asset-path "/js/out"
-                      :source-map true
-                      :main "book-list.app"
-                      :pretty-print true}}}}
+                             {:app
+                              {:source-paths ["src/cljs" "src/cljc" "env/dev/cljs"]
+                               :figwheel {:on-jsload "book-list.core/mount-components"}
+                               :compiler
+                               {:output-dir "target/cljsbuild/public/js/out"
+                                :closure-defines {"re_frame.trace.trace_enabled_QMARK_" true}
+                                :optimizations :none
+                                :preloads [re-frisk.preload]
+                                :output-to "target/cljsbuild/public/js/app.js"
+                                :asset-path "/js/out"
+                                :source-map true
+                                :main "book-list.app"
+                                :pretty-print true}}}}
                   
                   
                   :doo {:build "test"}
